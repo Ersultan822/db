@@ -1,0 +1,13 @@
+INSERT INTO users (username,email,password,role)
+VALUES ('admin','admin@mail.com','123','admin'),
+       ('aidar','aidar@mail.com','123','journalist'),
+       ('reader1','reader@mail.com','123','reader');
+
+INSERT INTO journalists (full_name,experience_years,user_id)
+VALUES ('Айдар Н.',5,2);
+
+INSERT INTO categories (category_name)
+VALUES ('Саясат'),('Спорт');
+
+INSERT INTO articles (title,content,status,journalist_id,category_id)
+VALUES ('Жаңа заң','Мақала мәтіні','published',1,1);
