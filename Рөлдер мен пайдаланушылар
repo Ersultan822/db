@@ -1,0 +1,20 @@
+CREATE DATABASE news_db;
+
+CREATE USER admin_user WITH PASSWORD '1234';
+CREATE USER journalist_user WITH PASSWORD '1234';
+CREATE USER reader_user WITH PASSWORD '1234';
+
+CREATE ROLE admin_role;
+CREATE ROLE journalist_role;
+CREATE ROLE reader_role;
+
+GRANT ALL PRIVILEGES ON DATABASE news_db TO admin_role;
+
+GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO journalist_role;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO reader_role;
+
+GRANT admin_role TO admin_user;
+GRANT journalist_role TO journalist_user;
+GRANT reader_role TO reader_user;
+
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO journalist_role;
