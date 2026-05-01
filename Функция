@@ -1,0 +1,44 @@
+-- =========================
+-- FUNCTIONS 
+-- =========================
+
+-- 1. count_articles
+CREATE OR REPLACE FUNCTION count_articles(j_id INT)
+RETURNS INT AS $$
+DECLARE total INT;
+BEGIN
+    SELECT COUNT(*) INTO total
+    FROM articles
+    WHERE journalist_id = j_id;
+    RETURN total;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 2. total_views
+CREATE OR REPLACE FUNCTION total_views(j_id INT)
+RETURNS INT AS $$
+DECLARE total INT;
+BEGIN
+    SELECT SUM(views) INTO total
+    FROM articles
+    WHERE journalist_id = j_id;
+    RETURN total;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 3. articles_by_category
+CREATE OR REPLACE FUNCTION articles_by_category(cat_id INT)
+RETURNS INT AS $$
+DECLARE total INT;
+BEGIN
+    SELECT COUNT(*) INTO total
+    FROM articles
+    WHERE category_id = cat_id;
+    RETURN total;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ===== TEST =====
+SELECT count_articles(1);
+SELECT total_views(1);
+SELECT articles_by_category(1);
