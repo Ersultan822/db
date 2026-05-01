@@ -1,24 +1,26 @@
 
 
 
--- =========================
--- ❌ 1NF БҰЗЫЛҒАН
--- =========================
+/* =====================================================
+   1. ❌ UNF / 1NF БҰЗЫЛҒАН (қате)
+===================================================== */
+
 CREATE TABLE nf1_bad (
     id SERIAL PRIMARY KEY,
-    article_title VARCHAR(200),
+    title VARCHAR(200),
     tags VARCHAR(200) -- ❌ бірнеше мән
 );
 
-INSERT INTO nf1_bad (article_title,tags)
+INSERT INTO nf1_bad (title,tags)
 VALUES
 ('Жаңа заң','заң,қоғам,саясат'),
 ('Футбол','спорт,футбол');
 
 
--- =========================
--- ✅ 1NF ДҰРЫС
--- =========================
+/* =====================================================
+   1. ✅ 1NF (атомарлық мәндер)
+===================================================== */
+
 CREATE TABLE articles_1nf (
     article_id SERIAL PRIMARY KEY,
     title VARCHAR(200)
@@ -45,9 +47,10 @@ INSERT INTO article_tag_1nf VALUES
 (2,4),(2,5);
 
 
--- =========================
--- ❌ 2NF БҰЗЫЛҒАН
--- =========================
+/* =====================================================
+   2. ❌ 2NF БҰЗЫЛҒАН (partial dependency)
+===================================================== */
+
 CREATE TABLE nf2_bad (
     article_id INT,
     title VARCHAR(200),
@@ -60,9 +63,10 @@ VALUES
 (2,'Футбол','Спорт');
 
 
--- =========================
--- ✅ 2NF ДҰРЫС
--- =========================
+/* =====================================================
+   2. ✅ 2NF (category бөлек)
+===================================================== */
+
 CREATE TABLE categories_2nf (
     category_id SERIAL PRIMARY KEY,
     category_name VARCHAR(100)
@@ -83,9 +87,10 @@ VALUES
 ('Футбол',2);
 
 
--- =========================
--- ❌ 3NF БҰЗЫЛҒАН
--- =========================
+/* =====================================================
+   3. ❌ 3NF БҰЗЫЛҒАН (transitive dependency)
+===================================================== */
+
 CREATE TABLE nf3_bad (
     user_id INT,
     username VARCHAR(50),
@@ -99,9 +104,10 @@ VALUES
 (3,'reader1','reader');
 
 
--- =========================
--- ✅ 3NF ДҰРЫС
--- =========================
+/* =====================================================
+   3. ✅ 3NF (артық тәуелділік жойылды)
+===================================================== */
+
 CREATE TABLE users_3nf (
     user_id SERIAL PRIMARY KEY,
     username VARCHAR(50),
@@ -115,52 +121,45 @@ VALUES
 ('reader1','reader');
 
 
--- =========================
--- 🔥 ФИНАЛ (СЕНІҢ ЖОБА)
--- =========================
-CREATE TABLE users (
-    user_id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password VARCHAR(100) NOT NULL,
-    role VARCHAR(20) CHECK (role IN ('admin','journalist','reader'))
+/* =====================================================
+   4. ❌ BCNF БҰЗЫЛҒАН
+===================================================== */
+
+CREATE TABLE bcnf_bad (
+    journalist_id INT,
+    category_id INT,
+    journalist_name VARCHAR(100)
 );
 
-CREATE TABLE journalists (
-    journalist_id SERIAL PRIMARY KEY,
-    full_name VARCHAR(100),
-    experience_years INT,
-    user_id INT UNIQUE REFERENCES users(user_id)
+INSERT INTO bcnf_bad
+VALUES
+(1,1,'Айдар'),
+(2,1,'Айдар'), -- ❌ бір категорияда 2 journalist
+(3,2,'Бекзат');
+
+
+/* =====================================================
+   4. ✅ BCNF (бөлу арқылы шешілді)
+===================================================== */
+
+CREATE TABLE journalists_bcnf (
+    journalist_id INT PRIMARY KEY,
+    journalist_name VARCHAR(100)
 );
 
-CREATE TABLE categories (
-    category_id SERIAL PRIMARY KEY,
-    category_name VARCHAR(100)
+CREATE TABLE category_journalist (
+    category_id INT PRIMARY KEY,
+    journalist_id INT REFERENCES journalists_bcnf(journalist_id)
 );
 
-CREATE TABLE articles (
-    article_id SERIAL PRIMARY KEY,
-    title VARCHAR(200),
-    content TEXT,
-    journalist_id INT REFERENCES journalists(journalist_id),
-    category_id INT REFERENCES categories(category_id)
-);
+INSERT INTO journalists_bcnf
+VALUES
+(1,'Айдар'),
+(2,'Бекзат');
+
+INSERT INTO category_journalist
+VALUES
+(1,1),
+(2,2);
 
 
--- =========================
--- ✅ ФИНАЛ ДЕРЕК
--- =========================
-INSERT INTO users (username,email,password,role)
-VALUES 
-('admin','admin@mail.com','123','admin'),
-('aidar','aidar@mail.com','123','journalist'),
-('reader1','reader@mail.com','123','reader');
-
-INSERT INTO journalists (full_name,experience_years,user_id)
-VALUES ('Айдар Н.',5,2);
-
-INSERT INTO categories (category_name)
-VALUES ('Саясат'),('Спорт');
-
-INSERT INTO articles (title,content,journalist_id,category_id)
-VALUES ('Жаңа заң','Мақала мәтіні',1,1);
