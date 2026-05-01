@@ -1,0 +1,70 @@
+-- =========================
+-- PROCEDURES 
+-- =========================
+
+-- 1. add_user
+CREATE OR REPLACE PROCEDURE add_user(
+    u_name VARCHAR,
+    u_email VARCHAR,
+    u_pass VARCHAR,
+    u_role VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO users(username,email,password,role)
+    VALUES (u_name,u_email,u_pass,u_role);
+END;
+$$;
+
+-- 2. add_article
+CREATE OR REPLACE PROCEDURE add_article(
+    t VARCHAR,
+    c TEXT,
+    j_id INT,
+    cat_id INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO articles(title,content,journalist_id,category_id)
+    VALUES (t,c,j_id,cat_id);
+END;
+$$;
+
+-- 3. increase_views
+CREATE OR REPLACE PROCEDURE increase_views(a_id INT)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE articles
+    SET views = views + 1
+    WHERE article_id = a_id;
+END;
+$$;
+
+-- 4. add_comment
+CREATE OR REPLACE PROCEDURE add_comment(
+    txt TEXT,
+    u_id INT,
+    a_id INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO comments(content,user_id,article_id)
+    VALUES (txt,u_id,a_id);
+END;
+$$;
+
+-- ===== TEST =====
+CALL add_user('proc_test','proc@mail.com','123','reader');
+
+CALL add_article('PROC ARTICLE','text',1,1);
+
+CALL increase_views(1);
+
+CALL add_comment('Nice!',3,1);
+
+SELECT * FROM users;
+SELECT * FROM articles;
