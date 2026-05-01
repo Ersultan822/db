@@ -1,0 +1,100 @@
+-- =========================
+-- TRIGGERS
+-- =========================
+
+-- LOG TABLE
+CREATE TABLE IF NOT EXISTS article_log (
+    log_id SERIAL PRIMARY KEY,
+    action TEXT,
+    log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 1. LOG TRIGGER
+CREATE OR REPLACE FUNCTION log_insert()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO article_log(action)
+    VALUES ('Article inserted');
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_log_insert ON articles;
+
+CREATE TRIGGER trg_log_insert
+AFTER INSERT ON articles
+FOR EACH ROW
+EXECUTE FUNCTION log_insert();
+
+
+-- 2. CHECK TRIGGER
+CREATE OR REPLACE FUNCTION check_views()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.views < 0 THEN
+        RAISE EXCEPTION 'Views cannot be negative!';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_check_views ON articles;
+
+CREATE TRIGGER trg_check_views
+BEFORE UPDATE ON articles
+FOR EACH ROW
+EXECUTE FUNCTION check_views();
+
+
+-- 3. AUTO PUBLISH
+CREATE OR REPLACE FUNCTION auto_publish()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.views > 100 THEN
+        NEW.status := 'published';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_auto_publish ON articles;
+
+CREATE TRIGGER trg_auto_publish
+BEFORE UPDATE ON articles
+FOR EACH ROW
+EXECUTE FUNCTION auto_publish();
+
+
+-- 4. INSTEAD OF TRIGGER
+CREATE OR REPLACE VIEW article_view AS
+SELECT title, content FROM articles;
+
+CREATE OR REPLACE FUNCTION insert_view()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO articles(title,content)
+    VALUES (NEW.title,NEW.content);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_view_insert ON article_view;
+
+CREATE TRIGGER trg_view_insert
+INSTEAD OF INSERT ON article_view
+FOR EACH ROW
+EXECUTE FUNCTION insert_view();
+
+
+-- ===== TEST =====
+INSERT INTO articles (title,content,journalist_id,category_id)
+VALUES ('TRIGGER TEST','text',1,1);
+
+SELECT * FROM article_log;
+
+UPDATE articles SET views = 150 WHERE article_id = 1;
+
+INSERT INTO article_view (title,content)
+VALUES ('VIEW TEST','text');
+
+SELECT * FROM articles;
