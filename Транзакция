@@ -1,0 +1,17 @@
+BEGIN;
+
+INSERT INTO users (username,email,password,role)
+VALUES ('user1','user1@mail.com','123','reader');
+
+SAVEPOINT sp1;
+
+INSERT INTO users (username,email,password,role)
+VALUES ('user2','user2@mail.com','123','reader');
+
+
+INSERT INTO users (username,email,password,role)
+VALUES ('user3','user3@mail.com','123','wrong_role');
+
+ROLLBACK TO sp1;
+
+COMMIT;
